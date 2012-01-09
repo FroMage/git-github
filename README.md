@@ -137,26 +137,26 @@ You can set the following git configuration options to customise your workflow:
  <tr>
   <td>github.token</td>
   <td>The GitHub token you obtained previously</td>
-  <td>_Required_</td>
+  <td><em>Required</em></td>
  </tr>
  <tr>
   <td>github.project.user</td>
   <td>GitHub user (owner) of the current project</td>
-  <td>Use value for `github.user`</td>
+  <td>Use value for <pre>github.user</pre></td>
  </tr>
  <tr>
   <td>github.project.repo</td>
   <td>Name of the current project's repo</td>
-  <td>Current directory name</td>
+  <td><em>Current directory name</em></td>
  </tr>
  <tr>
   <td>github.project.remote</td>
   <td>Name of the remote where the project is pushed/pulled</td>
-  <td>_origin_</td>
+  <td><pre>origin</pre></td>
  </tr>
  <tr>
   <td>github.commit.template</td>
   <td>Template of the commit message</td>
-  <td>_Fix for #%i: %t_</td>
+  <td><em>Fix for #%i: %t</em></td>
  </tr>
 </table>
