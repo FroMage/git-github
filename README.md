@@ -6,7 +6,9 @@ If like Stef you're using a local branch per GitHub issue, you might want the fo
 
 This can all be automated and we describe how to set this up. 
 
-# Get a GitHub API token 
+# Installation
+
+## Get a GitHub API token 
 
 You need to run a little shell script to get an API token:
 
@@ -16,7 +18,7 @@ curl -u "YOUR_GITHUB_USERNAME:YOUR_GITHUB_PASSWORD" \
  | grep -E '^  "token": "'|sed 's/  "token": "\(.*\)",/\1/'
 ```
 
-*First replace `YOUR_GITHUB_USERNAME` and `YOUR_GITHUB_PASSWORD` with your proper credentials*.
+**First replace `YOUR_GITHUB_USERNAME` and `YOUR_GITHUB_PASSWORD` with your proper credentials**.
 
 Now remember this token and your GitHub user in your general git settings:
 
@@ -25,7 +27,7 @@ git config --global github.token TOKEN
 git config --global github.user YOUR_GITHUB_USERNAME
 ```
 
-# Install the GitHub commands
+## Install the GitHub commands
 
 Simply make symlinks to your checkout of the commands to a folder in your `$PATH`:
 
@@ -33,7 +35,7 @@ Simply make symlinks to your checkout of the commands to a folder in your `$PATH
 cp -s git-ghbranch git-ghfix ~/bin/
 ``` 
 
-h1. Install the JIRA prepare-commit-msg hook 
+## Install the GitHub prepare-commit-msg hook 
 
 You need to make a a symbol of the custom hook in each project you want to use it in:
 
@@ -101,7 +103,7 @@ for `master` commits.
 If the GitHub issue can be resolved from GitHub, it will be cached in `.git/gh.cache` so that future commits on 
 this branch are faster. 
 
-# Merge the branch back to master when you have fixed the issue 
+## Merge the branch back to master when you have fixed the issue 
 
 Note: the branch name argument is optional, it will default to the current branch if missing.
 
@@ -116,3 +118,45 @@ This will do the following:
 1. Close the 23 branch 
 1. Mark the 23 issue as Fixed 
 1. Remove the "in progress" tag on #23
+
+# Customisation
+
+You can set the following git configuration options to customise your workflow:
+
+<table>
+ <tr>
+  <th>Key</th>
+  <th>Usage</th>
+  <th>Default</th>
+ </tr>
+ <tr>
+  <td>github.user</td>
+  <td>Your GitHub user name</td>
+  <td>$USER</td>
+ </tr>
+ <tr>
+  <td>github.token</td>
+  <td>The GitHub token you obtained previously</td>
+  <td>_Required_</td>
+ </tr>
+ <tr>
+  <td>github.project.user</td>
+  <td>GitHub user (owner) of the current project</td>
+  <td>Use value for `github.user`</td>
+ </tr>
+ <tr>
+  <td>github.project.repo</td>
+  <td>Name of the current project's repo</td>
+  <td>Current directory name</td>
+ </tr>
+ <tr>
+  <td>github.project.remote</td>
+  <td>Name of the remote where the project is pushed/pulled</td>
+  <td>_origin_</td>
+ </tr>
+ <tr>
+  <td>github.commit.template</td>
+  <td>Template of the commit message</td>
+  <td>_Fix for #%i: %t_</td>
+ </tr>
+</table>
