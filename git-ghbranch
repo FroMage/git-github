@@ -1,0 +1,68 @@
+#!/bin/bash -e
+
+USAGE='<branchname>'
+LONG_USAGE='git-ghbranch lets you create a new branch based on a 
+GitHub issue and mark the issue as in progress.'
+
+. git-sh-setup
+
+CACHE_FILE=$GIT_DIR/gh.cache
+
+GITHUB_PROJECT_USER=$(git config github.project.user || echo $USER)
+GITHUB_PROJECT_REPO=$(git config github.project.repo || basename `pwd`)
+GITHUB_PROJECT_REMOTE=$(git config github.project.remote || echo 'origin')
+
+GITHUB_USER=$(git config github.user || echo $USER)
+GITHUB_TOKEN=$(git config github.token || true)
+
+JIRA_CMD="$JIRA_CLI --server $JIRA_SERVER --user $JIRA_USER --password $JIRA_PASSWORD"
+
+function get_cached_issue () {
+    local ISSUE=$1
+    test -f $CACHE_FILE || return 0
+    local LINE=`grep ^$ISSUE: $CACHE_FILE`
+    test -n "$LINE" || return 0
+    ISSUE_DESCR=$(echo $LINE | sed -e "s/^$ISSUE: //")
+}
+
+function fail () {
+    echo $@
+    exit 1
+}
+
+# start to work
+
+require_work_tree
+
+BRANCH_NAME=$1
+test -n "$BRANCH_NAME" || usage
+
+test -n "$GIT_DIR" || fail "Missing GIT_DIR variable"
+
+test -n "$GITHUB_PROJECT_REPO" || fail "Missing git config variable github.project.repo (set it with 'git config github.project.repo ...')"
+test -n "$GITHUB_PROJECT_USER" || fail "Missing git config variable github.project.user (set it with 'git config github.project.user ...')"
+test -n "$GITHUB_PROJECT_REMOTE" || fail "Missing git config variable github.project.remote (set it with 'git config github.project.remote ...')"
+
+test -n "$GITHUB_USER" || fail "Missing git config variable github.user (set it with 'git config github.user ...')"
+test -n "$GITHUB_TOKEN" || fail "Missing git config variable github.token (set it with 'git config github.token ...')"
+
+[[ $BRANCH_NAME =~ ^[0-9]+$ ]] || fail "Branch $BRANCH_NAME does not appear to be a GitHub issue"
+
+echo "Doing a branch for $BRANCH_NAME"
+
+$JIRA_CMD --action updateIssue --issue $BRANCH_NAME --assignee $JIRA_USER
+$JIRA_CMD --action progressIssue --issue $BRANCH_NAME --step "Start Progress"
+$JIRA_CMD --action addComment --issue $BRANCH_NAME --comment "Coding started by $GIT_USER"
+
+# Cache the jira issue title for later cheaper commits
+get_cached_issue $BRANCH_NAME
+if test -z "$ISSUE_DESCR"
+then
+    ISSUE_DESCR=`$JIRA_CMD --action getFieldValue --issue $BRANCH_NAME --field Summary | sed -e '1d'`
+    echo "$BRANCH_NAME: $ISSUE_DESCR" >> $CACHE_FILE
+
+fi
+
+git checkout -b $BRANCH_NAME
+
+echo "*** You are now on branch $BRANCH_NAME ***"
