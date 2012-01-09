@@ -132,7 +132,7 @@ You can set the following git configuration options to customise your workflow:
  <tr>
   <td>github.user</td>
   <td>Your GitHub user name</td>
-  <td>$USER</td>
+  <td><pre>$USER</pre></td>
  </tr>
  <tr>
   <td>github.token</td>
@@ -157,6 +157,6 @@ You can set the following git configuration options to customise your workflow:
  <tr>
   <td>github.commit.template</td>
   <td>Template of the commit message</td>
-  <td><em>Fix for #%i: %t</em></td>
+  <td><pre>Fix for #%i: %t</pre></td>
  </tr>
 </table>
