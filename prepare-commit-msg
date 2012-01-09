@@ -1,0 +1,60 @@
+#!/bin/bash -e
+
+COMMIT_FILE=$1
+BRANCH_NAME=`git symbolic-ref HEAD | sed -e 's/refs\/heads\///'`
+
+. gh-sh-setup
+
+#
+# Functions
+
+function prepend () {
+	local MSG=$1
+	# Give up if we already have a commit message (like when rebasing)
+	awk 'NR==1 && /^$/ { exit 0 }; {exit 1} ' < $COMMIT_FILE || return 0
+	echo -e $MSG | sed -i -e "1s/^/\n# [github issue]/" -e 'r /dev/stdin' -e '2s/^/# \n/' $COMMIT_FILE
+}
+
+function prepend_ok () {
+	local MSG=$1
+	# Give up if we already have a commit message (like when rebasing)
+	awk 'NR==1 && /^$/ { exit 0 }; {exit 1} ' < $COMMIT_FILE || return 0
+	echo $MSG | sed -i -e 'r /dev/stdin'  -e '1d' -e '2s/^/\n/' $COMMIT_FILE
+}
+
+function fail() {
+    prepend "#$@"
+    exit 0
+}
+
+#
+# Sanity checks
+
+test -n "$COMMIT_FILE" || fail "Missing commit file argument"
+
+sanity_checks
+
+get_cached_issue $BRANCH_NAME
+
+if test -z "$ISSUE_DESCR"
+then
+	echo "Querying GitHub, this might take a while..."
+	get_issue_descr
+	SHOULD_CACHE=1
+fi
+
+if test -z "$ISSUE_DESCR"
+then
+	fail "Branch appears to be a GitHub issue but we were unable to get its description"
+fi
+
+if test "$SHOULD_CACHE" = "1"
+then
+	echo "$BRANCH_NAME: $ISSUE_DESCR" >> $CACHE_FILE
+
+fi
+
+prepend "# Issue #$BRANCH_NAME: $ISSUE_DESCR\n# View issue at https://github.com/$GITHUB_USER/$GITHUB_PROJECT_REPO/issues/$BRANCH_NAME"
+
+MSG=`echo $GITHUB_COMMIT_TEMPLATE | awk "-vi=$BRANCH_NAME" "-vt=$ISSUE_DESCR" '{sub(/%i/,i); sub(/%t/,t); print}'`
+prepend_ok "#$MSG"

@@ -1,0 +1,72 @@
+# Get git functions/variables
+. git-sh-setup
+
+#
+# Config
+
+CACHE_FILE=$GIT_DIR/gh.cache
+
+PROGRESS_LABEL="IN PROGRESS"
+
+#
+# Customisable config
+
+GITHUB_USER=$(git config github.user || echo $USER)
+GITHUB_TOKEN=$(git config github.token || true)
+
+GITHUB_PROJECT_USER=$(git config github.project.user || echo $GITHUB_USER)
+GITHUB_PROJECT_REPO=$(git config github.project.repo || basename `pwd`)
+GITHUB_PROJECT_REMOTE=$(git config github.project.remote || echo 'origin')
+
+GITHUB_COMMIT_TEMPLATE=$(git config github.commit.template || true)
+
+#
+# Functions
+
+function get_cached_issue () {
+    local ISSUE=$1
+    test -f $CACHE_FILE || return 0
+    local LINE=`grep ^$ISSUE: $CACHE_FILE`
+    test -n "$LINE" || return 0
+    ISSUE_DESCR=$(echo $LINE | sed -e "s/^$ISSUE: //")
+}
+
+function get_issue_descr () {
+    ISSUE_DESCR=`$CURL_CMD "$AUTH" "$ISSUE_URL" | grep -E '^  "title": "'|sed 's/  "title": "\(.*\)",/\1/'`
+}
+
+function fail () {
+    echo $@
+    exit 1
+}
+
+function fail_missing_config () {
+    fail "Missing git config variable $1 (set it with 'git config $1 ...')"
+}
+
+#
+# Sanity checks
+
+function sanity_checks() {
+
+ require_work_tree
+
+ test -n "$GIT_DIR" || fail "Missing GIT_DIR variable"
+
+ test -n "$GITHUB_PROJECT_REPO" || fail_missing_config "github.project.repo"
+ test -n "$GITHUB_PROJECT_USER" || fail_missing_config "github.project.user"
+ test -n "$GITHUB_PROJECT_REMOTE" || fail_missing_config "github.project.remote"
+
+ test -n "$GITHUB_USER" || fail_missing_config "github.user"
+ test -n "$GITHUB_TOKEN" || fail_missing_config "github.token"
+ test -n "$BRANCH_NAME" || usage
+
+ test -n "$GITHUB_COMMIT_TEMPLATE" || GITHUB_COMMIT_TEMPLATE="Fix for #%i: %t"
+
+ [[ $BRANCH_NAME =~ ^[0-9]+$ ]] || fail "Branch $BRANCH_NAME does not appear to be a GitHub issue"
+
+ AUTH="Authorization: token $GITHUB_TOKEN"
+ CURL_CMD="curl -s -f -H"
+ ISSUE_URL="https://api.github.com/repos/$GITHUB_PROJECT_USER/$GITHUB_PROJECT_REPO/issues/$BRANCH_NAME"
+
+}
