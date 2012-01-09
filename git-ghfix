@@ -18,6 +18,7 @@ git checkout $BRANCH_NAME
 git rebase master
 git checkout master
 git merge $BRANCH_NAME
+git branch -d $BRANCH_NAME
 
 echo "Closing issue #$BRANCH_NAME"
 $CURL_CMD "$AUTH" -X PATCH --data-binary "{\"state\": \"closed\"}" "$ISSUE_URL" > /dev/null || fail "Failed to close issue"
