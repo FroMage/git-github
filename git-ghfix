@@ -20,10 +20,10 @@ git checkout master
 git merge $BRANCH_NAME
 
 echo "Closing issue #$BRANCH_NAME"
-$CURL_CMD "$AUTH" -X PATCH --data-binary "{\"state\": \"closed\"}" "$ISSUE_URL" || fail "Failed to close issue"
+$CURL_CMD "$AUTH" -X PATCH --data-binary "{\"state\": \"closed\"}" "$ISSUE_URL" > /dev/null || fail "Failed to close issue"
 
 echo "Removing $PROGRESS_LABEL label"
-$CURL_CMD "$AUTH" -X DELETE "$ISSUE_URL/labels/$PROGRESS_LABEL" || fail "Failed to remove $PROGRESS_LABEL label"
+$CURL_CMD "$AUTH" -X DELETE "$ISSUE_URL/labels/$PROGRESS_LABEL" > /dev/null  || fail "Failed to remove $PROGRESS_LABEL label"
 
 echo "*** You are now on branch master ***"
 

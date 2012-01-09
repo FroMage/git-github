@@ -11,12 +11,12 @@ BRANCH_NAME=$1
 sanity_checks
 
 # Assign to user
-echo "Assigning issue to $GITHUB_USER"
-$CURL_CMD "$AUTH" -X PATCH --data-binary "{\"assignee\": \"$GITHUB_USER\"}" "$ISSUE_URL" || fail "Failed to assign issue"
+echo "Assigning issue to $GITHUB_USER and opening it"
+$CURL_CMD "$AUTH" -X PATCH --data-binary "{\"assignee\": \"$GITHUB_USER\", \"state\": \"open\"}" "$ISSUE_URL"  > /dev/null || fail "Failed to assign issue"
 
 # Add tag
 echo "Marking #$BRANCH_NAME as $PROGRESS_LABEL"
-$CURL_CMD "$AUTH" -X POST --data-binary "[\"$PROGRESS_LABEL\"]" "$ISSUE_URL/labels" || fail "Failed to mark as $PROGRESS_LABEL"
+$CURL_CMD "$AUTH" -X POST --data-binary "[\"$PROGRESS_LABEL\"]" "$ISSUE_URL/labels"  > /dev/null || fail "Failed to mark as $PROGRESS_LABEL"
 
 # Cache the jira issue title for later cheaper commits
 echo "Getting description for #$BRANCH_NAME"
