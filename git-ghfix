@@ -1,5 +1,17 @@
 #!/bin/bash -e
 
+# resolve links - $0 may be a softlink
+PRG="$0"
+while [ -h "$PRG" ]; do
+    ls=`ls -ld "$PRG"`
+    link=`expr "$ls" : '.*-> \(.*\)$'`
+    if expr "$link" : '/.*' > /dev/null; then
+        PRG="$link"
+    else
+        PRG=`dirname "$PRG"`/"$link"
+    fi
+done
+
 USAGE='<branchname>'
 LONG_USAGE='git-ghfix lets you merge your issue branch to master 
 and mark the issue as fixed.'
@@ -8,7 +20,7 @@ BRANCH_NAME=$1
 # default to current branch
 test -n "$BRANCH_NAME" || BRANCH_NAME=`git symbolic-ref HEAD | sed -e 's/refs\/heads\///'`
 
-. gh-sh-setup
+. $(dirname "$PRG")/gh-sh-setup
 
 sanity_checks
 

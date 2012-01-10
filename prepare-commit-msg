@@ -1,9 +1,21 @@
 #!/bin/bash -e
 
+# resolve links - $0 may be a softlink
+PRG="$0"
+while [ -h "$PRG" ]; do
+    ls=`ls -ld "$PRG"`
+    link=`expr "$ls" : '.*-> \(.*\)$'`
+    if expr "$link" : '/.*' > /dev/null; then
+        PRG="$link"
+    else
+        PRG=`dirname "$PRG"`/"$link"
+    fi
+done
+
 COMMIT_FILE=$1
 BRANCH_NAME=`git symbolic-ref HEAD | sed -e 's/refs\/heads\///'`
 
-. gh-sh-setup
+. $(dirname "$PRG")/gh-sh-setup
 
 #
 # Functions
